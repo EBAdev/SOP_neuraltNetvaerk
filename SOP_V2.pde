@@ -24,7 +24,7 @@ void draw() {
   } else {
     float totalError = 0;
     for (int j = 0; j <trainingSetSize/100; j++) {
-      frameRate(30);
+      frameRate(20);
       background(255); 
       p.showPattern();
       p.createPattern();
