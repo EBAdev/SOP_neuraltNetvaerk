@@ -4,7 +4,7 @@ button b2;
 NeuralNetwork NN;
 
 int trainingSetSize = 500;
-int testingSetSize = 500;
+int testingSetSize = 100;
 
 boolean test = false;
 boolean train = false;
@@ -19,7 +19,7 @@ void setup() {
   b1 = new button(new PVector(700, 10), 200, 75, "Train the network");
   b2 = new button(new PVector(700, 110), 200, 75, "Test the network");
 
-  NN = new NeuralNetwork(4, 6, 3);
+  NN = new NeuralNetwork(4, 3, 3);
   NN.setActivationFunction(ActivationFunction.SIGMOID);
 
   background();
@@ -41,7 +41,7 @@ void draw() {
     train = false;
   } else if (!train && test) {
     float cost = 0;
-    for (int j = 0; j <trainingSetSize/100; j++) {
+    for (int j = 0; j < testingSetSize; j++) {
       background(); 
       p.showPattern();
       p.createPattern();
@@ -70,9 +70,9 @@ void background() {
   showNueralNetwork(500, 350, 550, 200);
   fill(0);
   textAlign(LEFT);
-  text("Line", 925, 402);
-  text("Stair", 925, 475);
-  text("Square", 925, 525);
+  text("Line", 930, 407);
+  text("Stair", 930, 457);
+  text("Square", 930, 507);
   textAlign(CENTER);
   text("The current cost function is: ", 800, 250);
   text(Cost, 800, 270);
