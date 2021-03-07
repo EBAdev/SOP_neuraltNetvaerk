@@ -3,8 +3,9 @@ button b1;
 button b2;
 NeuralNetwork NN;
 
-int trainingSetSize = 500;
+int trainingSetSize = 10000;
 int testingSetSize = 100;
+int correctAnswers = 0;
 
 boolean test = false;
 boolean train = false;
@@ -19,7 +20,7 @@ void setup() {
   b1 = new button(new PVector(700, 10), 200, 75, "Train the network");
   b2 = new button(new PVector(700, 110), 200, 75, "Test the network");
 
-  NN = new NeuralNetwork(4, 3, 3);
+  NN = new NeuralNetwork(4, 8, 3);
   NN.setActivationFunction(ActivationFunction.SIGMOID);
 
   background();
@@ -40,6 +41,7 @@ void draw() {
     }
     train = false;
   } else if (!train && test) {
+    correctAnswers = 0;
     float cost = 0;
     for (int j = 0; j < testingSetSize; j++) {
       background(); 
@@ -48,20 +50,31 @@ void draw() {
       p.getShape();
 
       p.constructTrainingData();
-      double[] networkGuess = NN.guess(p.inputs);
-
-      for (int k = 0; k < 3; k++) {
-        //print(" a :", (float)p.answers[k], " g: ", (float)networkGuess[k]);
-
-        cost += pow(((float)p.answers[k] - (float)networkGuess[k]), 2);
+      double[] temp = NN.guess(p.inputs);
+      float [] networkGuess = convertDoubleToFloat(temp);
+      int index = indexOfArray(networkGuess, max(networkGuess));
+     
+      if (p.shape == index+1) {
+        correctAnswers++;
+      } else {
+        println(" a :", (float)p.answers[0], " g: ", (float)networkGuess[0]);
+        println(" a :", (float)p.answers[1], " g: ", (float)networkGuess[1]);
+        println(" a :", (float)p.answers[2], " g: ", (float)networkGuess[2]);
+        println(" ");
       }
-      //println(cost);
+      
+      for (int k = 0; k < 3; k++) {
+        cost += pow(((float)p.answers[k] - networkGuess[k]), 2);
+      }
+
       Cost = str(cost);
     }
     test = false;
   } else {
   }
 }
+
+
 
 void background() {
   background(255); 
@@ -74,8 +87,10 @@ void background() {
   text("Stair", 930, 457);
   text("Square", 930, 507);
   textAlign(CENTER);
-  text("The current cost function is: ", 800, 250);
-  text(Cost, 800, 270);
+  text("The current cost function is: ", 800, 225);
+  text(Cost, 800, 250);
+  text("During testing it got: ", 800, 290);
+  text(correctAnswers + " of 100 correct", 800, 310);
 
   //buttonFunctionality
   if (mousePressed && b1.mouseIsOnButton() && !test) {
@@ -148,4 +163,24 @@ double[][] convertMatrixToArray(SimpleMatrix i) {
     }
   }
   return array;
+}
+
+int indexOfArray(float[] list, float numberToIndex) {
+  int index = 0;
+  for (int i=0; i < list.length; i++) { 
+    if (list[i] == numberToIndex ) {  
+      index = i;
+    }
+  }
+  return index;
+}
+
+float[] convertDoubleToFloat(double[] list ) {
+  float[] toReturn = new float[list.length];
+  for (int i = 0; i < list.length; i++)
+  {
+    toReturn[i] = (float) list[i];
+  }
+
+  return toReturn;
 }
