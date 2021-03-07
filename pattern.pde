@@ -62,7 +62,7 @@ class pattern {
       inputs[i] = pattern.get(i);
     }
     for (int j = 0; j < 3; j++) {
-      if ( j == shape) {
+      if ( j == shape-1) {
         answers[j] = 1;
       } else {
         answers[j] = 0;

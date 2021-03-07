@@ -2,7 +2,9 @@ class button {
   PVector pos;
   int Height;
   int Width;
-  button(PVector p, int w, int h) {
+  String buttonText;
+  button(PVector p, int w, int h, String s) {
+    buttonText = s;
     Width = w;
     Height = h;
     pos = p;
@@ -13,6 +15,10 @@ class button {
     translate(pos.x, pos.y);
     fill(buttonUpdate());
     rect(0, 0, Width, Height);
+    fill(255);
+    textAlign(CENTER);
+    textSize(16);
+    text(buttonText,Width/2,Height/2+5);
     popMatrix();
   }
 
