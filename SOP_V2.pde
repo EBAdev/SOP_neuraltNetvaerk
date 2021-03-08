@@ -3,7 +3,7 @@ button b1;
 button b2;
 NeuralNetwork NN;
 
-int trainingSetSize = 10000;
+int trainingSetSize = 100;
 int testingSetSize = 100;
 int correctAnswers = 0;
 
@@ -11,31 +11,29 @@ boolean test = false;
 boolean train = false;
 
 String Cost = "unkown"; 
+
 void setup() {
   size(1000, 600);
   p = new pattern();  
   p.createPattern();
-  p.showPattern();
+
 
   b1 = new button(new PVector(700, 10), 200, 75, "Train the network");
   b2 = new button(new PVector(700, 110), 200, 75, "Test the network");
 
   NN = new NeuralNetwork(4, 8, 3);
   NN.setActivationFunction(ActivationFunction.SIGMOID);
-
+  NN.setLearningRate(0.1);
   background();
 }
 
 void draw() {
   background();
-  p.showPattern();
 
   if (train && !test) {
     for (int i = 0; i < trainingSetSize; i++) {
-      background(); 
-      p.showPattern();
+
       p.createPattern();
-      p.getShape();
       p.constructTrainingData();
       NN.train(p.inputs, p.answers);
     }
@@ -44,25 +42,23 @@ void draw() {
     correctAnswers = 0;
     float cost = 0;
     for (int j = 0; j < testingSetSize; j++) {
-      background(); 
-      p.showPattern();
-      p.createPattern();
-      p.getShape();
 
+      p.createPattern();
       p.constructTrainingData();
       double[] temp = NN.guess(p.inputs);
       float [] networkGuess = convertDoubleToFloat(temp);
       int index = indexOfArray(networkGuess, max(networkGuess));
-     
+
       if (p.shape == index+1) {
         correctAnswers++;
-      } else {
-        println(" a :", (float)p.answers[0], " g: ", (float)networkGuess[0]);
-        println(" a :", (float)p.answers[1], " g: ", (float)networkGuess[1]);
-        println(" a :", (float)p.answers[2], " g: ", (float)networkGuess[2]);
-        println(" ");
+        //} else {
+        //  println(" a :", (float)p.answers[0], " g: ", (float)networkGuess[0]);
+        //  println(" a :", (float)p.answers[1], " g: ", (float)networkGuess[1]);
+        //  println(" a :", (float)p.answers[2], " g: ", (float)networkGuess[2]);
+        //  println(" ");
+        //}
       }
-      
+
       for (int k = 0; k < 3; k++) {
         cost += pow(((float)p.answers[k] - networkGuess[k]), 2);
       }
@@ -71,13 +67,17 @@ void draw() {
     }
     test = false;
   } else {
+    background();
+    showActiveNetwork();
   }
 }
 
-
+void showActiveNetwork() {
+}
 
 void background() {
   background(255); 
+  p.showPattern();
   b1.show();
   b2.show();
   showNueralNetwork(500, 350, 550, 200);

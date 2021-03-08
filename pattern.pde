@@ -55,6 +55,7 @@ class pattern {
   }
 
   void constructTrainingData() {
+    getShape();
     inputs = new double[4];
     answers = new double [3];
 
