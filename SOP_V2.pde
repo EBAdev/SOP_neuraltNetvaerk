@@ -6,9 +6,16 @@ NeuralNetwork NN;
 int trainingSetSize = 100;
 int testingSetSize = 100;
 int correctAnswers = 0;
+int trainedTimes = 0;
 
 boolean test = false;
 boolean train = false;
+
+//for active network showing
+boolean active = false;
+boolean isCorrect = false;
+double[] in;
+float[] guess;
 
 String Cost = "unkown"; 
 
@@ -18,13 +25,12 @@ void setup() {
   p.createPattern();
 
 
-  b1 = new button(new PVector(700, 10), 200, 75, "Train the network");
-  b2 = new button(new PVector(700, 110), 200, 75, "Test the network");
+  b1 = new button(new PVector(700, 10), 200, 75, "Hold to train the network",trainingSetSize+" samples");
+  b2 = new button(new PVector(700, 110), 200, 75, "Press to test the network", testingSetSize+" samples");
 
   NN = new NeuralNetwork(4, 8, 3);
   NN.setActivationFunction(ActivationFunction.SIGMOID);
   NN.setLearningRate(0.1);
-  background();
 }
 
 void draw() {
@@ -36,6 +42,7 @@ void draw() {
       p.createPattern();
       p.constructTrainingData();
       NN.train(p.inputs, p.answers);
+      trainedTimes++;
     }
     train = false;
   } else if (!train && test) {
@@ -51,12 +58,6 @@ void draw() {
 
       if (p.shape == index+1) {
         correctAnswers++;
-        //} else {
-        //  println(" a :", (float)p.answers[0], " g: ", (float)networkGuess[0]);
-        //  println(" a :", (float)p.answers[1], " g: ", (float)networkGuess[1]);
-        //  println(" a :", (float)p.answers[2], " g: ", (float)networkGuess[2]);
-        //  println(" ");
-        //}
       }
 
       for (int k = 0; k < 3; k++) {
@@ -67,12 +68,26 @@ void draw() {
     }
     test = false;
   } else {
-    background();
+
     showActiveNetwork();
   }
 }
 
 void showActiveNetwork() {
+
+  boolean correct = false;
+  p.constructTrainingData();
+
+  double[] temp = NN.guess(p.inputs);
+  float [] networkGuess = convertDoubleToFloat(temp);
+  int index = indexOfArray(networkGuess, max(networkGuess));
+  if (p.shape == index+1) {
+    correct = true;
+  }
+  isCorrect = correct;
+  in = p.inputs;
+  guess = networkGuess;
+  active = true;
 }
 
 void background() {
@@ -86,11 +101,13 @@ void background() {
   text("Line", 930, 407);
   text("Stair", 930, 457);
   text("Square", 930, 507);
-  textAlign(CENTER);
-  text("The current cost function is: ", 800, 225);
-  text(Cost, 800, 250);
-  text("During testing it got: ", 800, 290);
-  text(correctAnswers + " of 100 correct", 800, 310);
+  textAlign(CENTER); 
+  text("The network has seen: ", 800, 210);
+  text(trainedTimes + " training samples", 800, 235);
+  text("The accumilated cost for the latest test was: ", 800, 270);
+  text(Cost, 800, 290);
+  text("During testing it guessed: ", 800, 325);
+  text(correctAnswers + " of 100 correct", 800, 350);
 
   //buttonFunctionality
   if (mousePressed && b1.mouseIsOnButton() && !test) {
@@ -101,6 +118,7 @@ void background() {
 }
 
 void showNueralNetwork(int x, int y, int Width, int Height) {
+
   int []dimensions =  NN.getDimensions();
   IntList NueralNetworkNeurons = new IntList(); // List of neurons 
 
@@ -111,8 +129,8 @@ void showNueralNetwork(int x, int y, int Width, int Height) {
   }
   NueralNetworkNeurons.append(dimensions[3]); // add outputNeurons
 
-  SimpleMatrix[] temp = NN.getWeights(); // get the weights
-
+  SimpleMatrix[] weightMatrix = NN.getWeights(); // get the weights
+  SimpleMatrix[] biasMatrix = NN.getBiases(); // get the weights
   pushMatrix();
   translate(x, y);
 
@@ -129,7 +147,7 @@ void showNueralNetwork(int x, int y, int Width, int Height) {
         for (int l = 0; l < num2Neurons; l++) {
           float N2y = map((30+30*(l)), 0, (30+30*num2Neurons), 0, Height);
           float N2x = map((30+30*(j+1)), 0, (30+30*NueralNetworkNeurons.size()), 0, Width);
-          SimpleMatrix layerWeightMatrix = temp[j];
+          SimpleMatrix layerWeightMatrix = weightMatrix[j];
           double[][] layerWeights = convertMatrixToArray(layerWeightMatrix); // the weights between layer j and j+1
           float weight = (float)layerWeights[l][k];
           if (weight < 0) {
@@ -139,14 +157,31 @@ void showNueralNetwork(int x, int y, int Width, int Height) {
             stroke(0, 200, 0);
             strokeWeight(weight);
           }
-          //println(weight);
+
 
           line(Nx, Ny, N2x, N2y);
           stroke(0);
           strokeWeight(1);
         }
       }
-      fill(0);
+      if (!active) {
+        fill(0);
+      } else {
+        fill(0);
+        if (j == 0 && k < 4) {
+          float value = (float)in[k];
+          if (value == 0) {
+            fill(255);
+          } else {
+            fill(0);
+          }
+        } else {
+          double[] Inputs = new double[]{in[0], in[1], in[2], in[3]};
+          int mappedActivationFills = floor(map((float)getActivation(Inputs, j, k, weightMatrix, biasMatrix),0,1,0,255));
+          
+          fill(0,mappedActivationFills,0);
+        }
+      }
       ellipse(Nx, Ny, 20, 20);
     }
   }
@@ -154,6 +189,7 @@ void showNueralNetwork(int x, int y, int Width, int Height) {
 
   popMatrix();
 }
+
 
 double[][] convertMatrixToArray(SimpleMatrix i) {
   double[][] array = new double[i.numRows()][i.numCols()];
@@ -183,4 +219,48 @@ float[] convertDoubleToFloat(double[] list ) {
   }
 
   return toReturn;
+}
+
+
+////THE FOLLOWING CODE IS CODE I TOOK FROM A LIBRARY THAT WAS LABLED AS PRIVATE VARIABLES AND MADE THEM ACSSIBLE FOR MY PROGRAM.
+public double getActivation(double[] inputArray, int layer, int neuron, SimpleMatrix[] W, SimpleMatrix[] B) {
+  if (inputArray.length != p.inputs.length) {
+    throw new WrongDimensionException(inputArray.length, p.inputs.length, "Input");
+  } else {
+    // Get ActivationFunction-object from the map by key
+    ActivationFunction activationFunction = new SigmoidActivationFunction();
+
+    // Transform array to matrix
+
+    SimpleMatrix output = MatrixUtilities.arrayToMatrix(inputArray);
+
+    SimpleMatrix layers[] = new SimpleMatrix[layer + 1];
+    layers[0] = output;
+
+    for (int j = 1; j < layer+1; j++) {
+
+      layers[j] = calculateLayer(W[j - 1], B[j - 1], output, activationFunction);
+      output = layers[j];
+    }
+
+    //output = calculateLayer(W[layer], B[layer], output, activationFunction);
+    double [] outArray = MatrixUtilities.getColumnFromMatrixAsArray(output, 0);
+
+    return outArray[neuron];
+  }
+}
+
+SimpleMatrix calculateLayer(SimpleMatrix weights, SimpleMatrix bias, SimpleMatrix input, ActivationFunction activationFunction) {
+  // Calculate outputs of layer
+  SimpleMatrix result = weights.mult(input);
+  // Add bias to outputs
+  result = result.plus(bias);
+  // Apply activation function and return result
+  return applyActivationFunction(result, false, activationFunction);
+}
+
+SimpleMatrix applyActivationFunction(SimpleMatrix input, boolean derivative, ActivationFunction activationFunction) {
+  // Applies either derivative of activation function or regular activation function to a matrix and returns the result
+  return derivative ? activationFunction.applyDerivativeOfActivationFunctionToMatrix(input)
+    : activationFunction.applyActivationFunctionToMatrix(input);
 }

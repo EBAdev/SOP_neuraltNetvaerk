@@ -3,11 +3,13 @@ class button {
   int Height;
   int Width;
   String buttonText;
-  button(PVector p, int w, int h, String s) {
+  String subHeading;
+  button(PVector p, int w, int h, String s, String l) {
     buttonText = s;
     Width = w;
     Height = h;
     pos = p;
+    subHeading = l;
   }
 
   void show() {
@@ -17,8 +19,11 @@ class button {
     rect(0, 0, Width, Height);
     fill(255);
     textAlign(CENTER);
-    textSize(16);
-    text(buttonText,Width/2,Height/2+5);
+    textSize(15);
+    text(buttonText, Width/2, Height/2+5);
+    textSize(13);
+    text(subHeading, Width/2, Height/2+25);
+    textSize(15);
     popMatrix();
   }
 
