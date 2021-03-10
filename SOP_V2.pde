@@ -62,15 +62,7 @@ void draw() {
 
       Cost = str(cost); // add this to the UI
     }
-    //////print(trainedTimes);print(";");
-    //print(cost/10);//print(";");
-    //////print(correctAnswers);
-    //println();
     test = false;
-    //train = true;
-    //if (trainedTimes == 10000){
-    // exit(); 
-    //}
 
   } else {
     showActiveNetwork(); // function to show a networks guess on the pattern on screen while waiting for user input
