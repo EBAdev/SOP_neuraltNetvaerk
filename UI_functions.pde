@@ -43,7 +43,11 @@ void background() {
   text("Line", 930, 407);
   text("Stair", 930, 457);
   text("Square", 930, 507);
-  textAlign(CENTER); 
+  textAlign(CENTER);
+  fill(255);
+  textSize(12);
+  text("Learning rate "+LearningRate, 800, 30);
+  fill(0);
   text("The network has seen: ", 800, 210);
   text(trainedTimes + " training samples", 800, 235);
   text("The accumilated cost for the latest test was: ", 800, 270);
